@@ -1,6 +1,16 @@
-# Delete Account API (Apple Guideline 5.1.1)
+# Delete Account API (Apple Guideline 5.1.1 / Google Play Data Safety)
 
 Mobile app **Profile → Delete Account** should show a confirmation dialog in the app, then call this API (no request body).
+
+## Public web request page (Play Console)
+
+Unauthenticated users can also request deletion at:
+
+- `GET /delete-account` — public instructions + form (`https://app.tandil.ae/delete-account`)
+- `POST /delete-account` — submit request (throttled; creates a pending `account_deletion_requests` row and emails support)
+
+Web requests are **not** immediate deletions. Support verifies identity and processes within 30 days.
+In-app client deletion via the authenticated API remains immediate.
 
 ## Endpoints
 

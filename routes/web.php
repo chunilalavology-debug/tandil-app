@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\VisitController;
 use App\Http\Controllers\Admin\WalletController as AdminWalletController;
 use App\Http\Controllers\AppPortalWebController;
+use App\Http\Controllers\AccountDeletionRequestController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\AreaManager\AreaManagerDashboardController;
 use App\Http\Controllers\Client\ClientDashboardController;
@@ -147,11 +148,16 @@ if (! function_exists('registerPortalSupportChatRoutes')) {
     }
 }
 
-// Public legal pages (no authentication — App Store / website)
+// Public legal pages (no authentication — App Store / Play Console / website)
 Route::get('/privacy-policy', [LegalPageController::class, 'privacyPolicy'])->name('legal.privacy-policy');
 Route::get('/terms-and-conditions', [LegalPageController::class, 'terms'])->name('legal.terms');
 Route::get('/contact-us', [LegalPageController::class, 'contact'])->name('legal.contact');
 Route::get('/support', [LegalPageController::class, 'support'])->name('legal.support');
+Route::get('/delete-account', [AccountDeletionRequestController::class, 'show'])
+    ->name('legal.delete-account');
+Route::post('/delete-account', [AccountDeletionRequestController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('legal.delete-account.store');
 Route::redirect('/privacy', '/privacy-policy', 301);
 
 // Redirect root '/' to app portal (role picker) or dashboard redirect
