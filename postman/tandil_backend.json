@@ -1,10 +1,10 @@
 {
     "info": {
-        "name": "Tandil Backend v6.3.0",
-        "description": "Tandil Backend API. Env: base_url, token, vendor_id, product_id.\n\nHierarchy: main folders (Client Dashboard, Admin Dashboard, …) → subfolders → APIs.\n\n**v6.3.0:** Vendor/admin **service-pricing multiselect** — `enable_fixed_price`, `enable_per_m2`, `fixed_price`, `per_m2_price` (+ GET `area_pricing_settings`, `price_per_m2`). Legacy single-mode: `pricing_type` + `price`. Shop product detail: `pricing_type` multi + `price_per_m2` / breakdown. Cart: `area_pricing_mode` (`fixed`|`per_m2`) when both enabled.\n\n**v6.2.1:** Admin vendor pricing split `/pricing/service` + `/pricing/tree-palm`.\n\nAfter adding APIs: append in the correct subfolder, then optionally run:\n  php scripts/force_sort_postman_collection.php\n  php scripts/smoke_postman_number_order.php\n\nLAST_SORTED_AT: 2026-10-27T00:00:00Z\nCOLLECTION_ID: 298aa033-ad49-476b-96e3-9deff814dc55",
+        "name": "Tandil Backend v6.3.1",
+        "description": "Tandil Backend API. Env: base_url, token, vendor_id, product_id.\n\nHierarchy: main folders (Client Dashboard, Admin Dashboard, …) → subfolders → APIs.\n\n**v6.3.1:** Device push tokens — POST/DELETE `/api/auth/device-token` and `/api/user/device-token`. iOS token is APNs (`platform: ios`). Push tap data: `type`, `order_id`, `visit_id`, `subscription_id` (no `notification_id`).\n\n**v6.3.0:** Vendor/admin **service-pricing multiselect** — `enable_fixed_price`, `enable_per_m2`, `fixed_price`, `per_m2_price` (+ GET `area_pricing_settings`, `price_per_m2`). Legacy single-mode: `pricing_type` + `price`. Shop product detail: `pricing_type` multi + `price_per_m2` / breakdown. Cart: `area_pricing_mode` (`fixed`|`per_m2`) when both enabled.\n\n**v6.2.1:** Admin vendor pricing split `/pricing/service` + `/pricing/tree-palm`.\n\nAfter adding APIs: append in the correct subfolder, then optionally run:\n  php scripts/force_sort_postman_collection.php\n  php scripts/smoke_postman_number_order.php\n\nLAST_SORTED_AT: 2026-10-27T00:00:00Z\nCOLLECTION_ID: 298aa033-ad49-476b-96e3-9deff814dc55",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "_exporter_id": "tandil-safe-298aa033",
-        "version": "6.3.0",
+        "version": "6.3.1",
         "_postman_id": "298aa033-ad49-476b-96e3-9deff814dc55"
     },
     "item": [
@@ -931,6 +931,78 @@
                                     ]
                                 },
                                 "description": "Step 3 — POST /api/auth/reset-password. Body: reset_token from step 2, password + password_confirmation (min 6). Then login with POST /api/auth/login."
+                            }
+                        },
+                        {
+                            "name": "10. Register device push token (POST)",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"token\": \"<apns_device_token_hex>\",\n  \"platform\": \"ios\",\n  \"device_id\": \"optional-stable-device-id\",\n  \"app_version\": \"1.0.0\",\n  \"locale\": \"en\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/auth/device-token",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "device-token"
+                                    ]
+                                },
+                                "description": "POST /api/auth/device-token. Auth: Bearer {{token}}. Any role. Call after login and whenever the device token refreshes. Body: token (required), platform (ios|android|web), optional device_id, app_version, locale. iOS must send the APNs device token with platform=ios (not a Firebase token). Alias: POST /api/user/device-token. There is no POST /api/device-push-tokens. Push tap data fields: type (e.g. order_status_changed, order_payment_confirmed, booking_confirmed, new_paid_order), order_id, visit_id, subscription_id, payment_status, order_status. notification_id and ids are not sent."
+                            }
+                        },
+                        {
+                            "name": "11. Revoke device push token (DELETE)",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"token\": \"<apns_device_token_hex>\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/auth/device-token",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "device-token"
+                                    ]
+                                },
+                                "description": "DELETE /api/auth/device-token. Auth: Bearer {{token}}. Call on logout. Body: token. Alias: DELETE /api/user/device-token. There is no POST /api/device-push-tokens/revoke."
                             }
                         }
                     ]
@@ -1899,9 +1971,81 @@
                                 },
                                 "description": "Same as **03. Authentication → 01. Client → 09**. Step 3 — new password."
                             }
+                        },
+                        {
+                            "name": "08. Register device push token (POST alias)",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"token\": \"<apns_device_token_hex>\",\n  \"platform\": \"ios\",\n  \"device_id\": \"optional-stable-device-id\",\n  \"app_version\": \"1.0.0\",\n  \"locale\": \"en\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/user/device-token",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "user",
+                                        "device-token"
+                                    ]
+                                },
+                                "description": "POST /api/user/device-token. Same handler as POST /api/auth/device-token. Auth: Bearer {{token}}. Body: token, platform (ios for APNs). Push tap data: type, order_id, visit_id, subscription_id. No notification_id and no ids field."
+                            }
+                        },
+                        {
+                            "name": "09. Revoke device push token (DELETE alias)",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"token\": \"<apns_device_token_hex>\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/user/device-token",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "user",
+                                        "device-token"
+                                    ]
+                                },
+                                "description": "DELETE /api/user/device-token. Same handler as DELETE /api/auth/device-token. Auth: Bearer {{token}}. Body: token. Logout / revoke this device."
+                            }
                         }
                     ],
-                    "description": "Session, profile bootstrap, logout, password reset, delete account."
+                    "description": "Session, profile bootstrap, logout, password reset, delete account, device push token."
                 },
                 {
                     "name": "02. Dashboard & Memberships",
