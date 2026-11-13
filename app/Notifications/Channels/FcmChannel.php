@@ -3,13 +3,13 @@
 namespace App\Notifications\Channels;
 
 use App\Models\User;
-use App\Services\Push\FcmPushService;
+use App\Services\Push\PushDeliveryService;
 use Illuminate\Notifications\Notification;
 
 class FcmChannel
 {
     public function __construct(
-        private readonly FcmPushService $fcm
+        private readonly PushDeliveryService $push
     ) {}
 
     public function send(object $notifiable, Notification $notification): void
@@ -18,16 +18,12 @@ class FcmChannel
             return;
         }
 
-        if (! $this->fcm->isEnabled()) {
-            return;
-        }
-
         $payload = $this->resolvePayload($notifiable, $notification);
         if ($payload === null) {
             return;
         }
 
-        $this->fcm->sendToUser(
+        $this->push->sendToUser(
             $notifiable,
             $payload['title'],
             $payload['body'],

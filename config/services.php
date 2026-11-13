@@ -107,7 +107,7 @@ return [
     ],
 
     /*
-    | Firebase Cloud Messaging — mobile push (Android/iOS) for background + killed app states.
+    | Firebase Cloud Messaging — Android push for background + killed app states.
     | driver: auto|log|legacy|http_v1
     | - auto: http_v1 if service-account fields set, else legacy if FCM_SERVER_KEY set, else log
     | - log: records pushes locally (tests / local without Firebase)
@@ -123,6 +123,23 @@ return [
         'client_email' => env('FCM_CLIENT_EMAIL'),
         'private_key' => env('FCM_PRIVATE_KEY'),
         'android_channel_id' => env('FCM_ANDROID_CHANNEL_ID', 'tandil_default'),
+    ],
+
+    /*
+    | Apple Push Notification service — iOS only. Does not use Firebase.
+    | driver: auto|log|http
+    | Auth key is the .p8 file from Apple Developer → Keys (Apple Push Notifications service).
+    */
+    'apns' => [
+        'enabled' => filter_var(env('APNS_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
+        'driver' => env('APNS_DRIVER', 'auto'),
+        'key_id' => env('APNS_KEY_ID'),
+        'team_id' => env('APNS_TEAM_ID'),
+        'bundle_id' => env('APNS_BUNDLE_ID'),
+        'private_key' => env('APNS_PRIVATE_KEY'),
+        'endpoint' => env('APNS_USE_SANDBOX', false)
+            ? 'https://api.sandbox.push.apple.com'
+            : env('APNS_ENDPOINT', 'https://api.push.apple.com'),
     ],
 
 ];
