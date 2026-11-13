@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Visit;
+use App\Notifications\Concerns\SendsFcmPush;
 use App\Support\NotificationAudiencePayload;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
@@ -11,6 +12,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 class VisitReminder extends Notification
 {
     use Queueable;
+    use SendsFcmPush;
 
     protected Visit $visit;
 
@@ -21,7 +23,7 @@ class VisitReminder extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail'];
+        return $this->channelsWithPush(['database', 'mail']);
     }
 
     public function toMail($notifiable)
@@ -38,10 +40,12 @@ class VisitReminder extends Notification
     public function toArray($notifiable)
     {
         return NotificationAudiencePayload::merge($notifiable, [
+            'title' => 'Upcoming Appointment',
             'visit_id' => $this->visit->id,
             'subscription_id' => $this->visit->subscription_id,
             'scheduled_date' => $this->visit->scheduled_date,
-            'message' => 'Upcoming visit reminder',
+            'type' => 'appointment_reminder',
+            'message' => 'You have a scheduled visit on '.$this->visit->scheduled_date.'.',
         ]);
     }
 }

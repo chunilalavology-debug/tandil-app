@@ -31,5 +31,7 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="NOMINATIM_FORWARD_GEOCODE_ENABLED" value="false"/>
+        <env name="FCM_ENABLED" value="true"/>
+        <env name="FCM_DRIVER" value="log"/>
     </php>
 </phpunit>

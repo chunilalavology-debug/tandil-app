@@ -191,6 +191,10 @@ Route::middleware('auth:sanctum')->prefix('auth')->group(function () {
     Route::delete('/account', [\App\Http\Controllers\Api\UserController::class, 'deleteAccount']);
     Route::post('/delete-account', [\App\Http\Controllers\Api\UserController::class, 'deleteAccount']);
 
+    // FCM device tokens (all roles) — required for background/closed-app push
+    Route::post('/device-token', [\App\Http\Controllers\Api\DevicePushTokenController::class, 'store']);
+    Route::delete('/device-token', [\App\Http\Controllers\Api\DevicePushTokenController::class, 'destroy']);
+
     /*
     |--------------------------------------------------------------------------
     | COMPLAINTS
@@ -873,6 +877,8 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\UserController::class, 'markNotificationAsRead']);
     Route::post('/notifications/read-all', [\App\Http\Controllers\Api\UserController::class, 'markAllNotificationsAsRead']);
     Route::post('/notifications/clear-all', [\App\Http\Controllers\Api\UserController::class, 'clearAllNotifications']);
+    Route::post('/device-token', [\App\Http\Controllers\Api\DevicePushTokenController::class, 'store']);
+    Route::delete('/device-token', [\App\Http\Controllers\Api\DevicePushTokenController::class, 'destroy']);
 });
 
 /*

@@ -106,4 +106,23 @@ return [
         ],
     ],
 
+    /*
+    | Firebase Cloud Messaging — mobile push (Android/iOS) for background + killed app states.
+    | driver: auto|log|legacy|http_v1
+    | - auto: http_v1 if service-account fields set, else legacy if FCM_SERVER_KEY set, else log
+    | - log: records pushes locally (tests / local without Firebase)
+    | - legacy: FCM server key (https://fcm.googleapis.com/fcm/send)
+    | - http_v1: service account JWT → FCM HTTP v1
+    */
+    'fcm' => [
+        'enabled' => filter_var(env('FCM_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
+        'driver' => env('FCM_DRIVER', 'auto'),
+        'server_key' => env('FCM_SERVER_KEY'),
+        'legacy_url' => env('FCM_LEGACY_URL', 'https://fcm.googleapis.com/fcm/send'),
+        'project_id' => env('FCM_PROJECT_ID'),
+        'client_email' => env('FCM_CLIENT_EMAIL'),
+        'private_key' => env('FCM_PRIVATE_KEY'),
+        'android_channel_id' => env('FCM_ANDROID_CHANNEL_ID', 'tandil_default'),
+    ],
+
 ];

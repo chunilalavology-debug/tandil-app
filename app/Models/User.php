@@ -92,6 +92,11 @@ class User extends Authenticatable
         return $this->hasMany(Visit::class, 'technician_id');
     }
 
+    public function devicePushTokens()
+    {
+        return $this->hasMany(DevicePushToken::class);
+    }
+
     // Technician → Availability, breaks, vacations
     public function technicianAvailability()
     {

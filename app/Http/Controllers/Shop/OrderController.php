@@ -147,36 +147,7 @@ class OrderController extends Controller
         $order->payment_status = 'paid';
         $order->paid_at = now();
         $order->save();
-
-        // 🔔 Notify client when order is paid
-        try {
-            if ($oldPaymentStatus !== 'paid' && $order->user) {
-                $order = $order->fresh(['items.product.services']) ?? $order;
-                $fulfillment = OrderFulfillmentType::usesVendorProductWorkflow($order)
-                    ? OrderFulfillmentType::PRODUCT
-                    : (OrderFulfillmentType::usesPlatformCheckoutWorkflow($order)
-                        ? OrderFulfillmentType::PLATFORM
-                        : OrderFulfillmentType::SERVICE);
-                $message = match ($fulfillment) {
-                    OrderFulfillmentType::PRODUCT => "Your order #{$order->id} payment is confirmed (AED {$order->total_amount}). The supplier will prepare and deliver your items. You will receive a delivery OTP in the app when your order is shipped.",
-                    OrderFulfillmentType::PLATFORM => "Your order #{$order->id} payment is confirmed (AED {$order->total_amount}). Thank you for your purchase.",
-                    default => "Your order #{$order->id} payment has been confirmed. Amount: AED {$order->total_amount}. Our team will assign a supervisor shortly.",
-                };
-
-                $order->user->notify(new AdminNotification(
-                    'Order Payment Confirmed',
-                    $message,
-                    [
-                        'type' => 'order_payment_confirmed',
-                        'fulfillment_type' => $fulfillment,
-                        'order_id' => $order->id,
-                        'track_endpoint' => '/api/orders/'.$order->id.'/track',
-                    ]
-                ));
-            }
-        } catch (\Exception $e) {
-            \Log::error('Failed to send payment confirmation notification: '.$e->getMessage());
-        }
+        // Client payment push/in-app notify is handled by OrderObserver → OrderClientLifecycleNotifier.
 
         if ($oldPaymentStatus !== 'paid') {
             OrderPaidSideEffects::run($order->fresh(['items.product.services']), 'Mark paid (API)', notifyAdmins: true);

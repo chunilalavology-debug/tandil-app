@@ -55,6 +55,9 @@ final class OrderPaidSideEffects
 
             self::ensureProcessingStatus($order);
 
+            // Client booking / appointment confirmation (date+slot when present).
+            OrderClientLifecycleNotifier::notifyBookingCreated($order);
+
             if (OrderFulfillmentType::hasServiceLines($order)) {
                 OrderSupervisorNotifier::notifySupervisorsForPaidOrder($order, $total, $placedBy);
             }
@@ -74,7 +77,13 @@ final class OrderPaidSideEffects
             foreach ($admins as $admin) {
                 $admin->notify(new AdminNotification(
                     'New Order Received',
-                    "A new order #{$order->id} has been placed by {$placedBy} for AED {$total}."
+                    "A new order #{$order->id} has been placed by {$placedBy} for AED {$total}.",
+                    [
+                        'type' => 'new_paid_order',
+                        'order_id' => $order->id,
+                        'payment_status' => $order->payment_status,
+                        'action_url' => '/admin/orders/'.$order->id,
+                    ]
                 ));
             }
         } catch (\Throwable $e) {

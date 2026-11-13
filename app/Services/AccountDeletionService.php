@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Cart;
+use App\Models\DevicePushToken;
 use App\Models\Order;
 use App\Models\ShopAppliedCheckoutCoupon;
 use App\Models\ShopMobileCheckout;
@@ -25,6 +26,7 @@ class AccountDeletionService
             $userId = (int) $user->id;
 
             $user->tokens()->delete();
+            DevicePushToken::query()->where('user_id', $userId)->delete();
 
             if (method_exists($user, 'notifications')) {
                 $user->notifications()->delete();

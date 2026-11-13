@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\SendsFcmPush;
 use App\Support\NotificationAudiencePayload;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
@@ -11,6 +12,7 @@ use App\Models\Subscription;
 class SubscriptionPaid extends Notification
 {
     use Queueable;
+    use SendsFcmPush;
 
     protected Subscription $subscription;
 
@@ -21,7 +23,7 @@ class SubscriptionPaid extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail'];
+        return $this->channelsWithPush(['database', 'mail']);
     }
 
     public function toMail($notifiable)
@@ -40,10 +42,12 @@ class SubscriptionPaid extends Notification
     public function toArray($notifiable)
     {
         return NotificationAudiencePayload::merge($notifiable, [
+            'title' => 'Subscription Payment Confirmed',
             'subscription_id' => $this->subscription->id,
             'plan' => $this->subscription->plan,
             'amount' => $this->subscription->amount,
             'payment_status' => $this->subscription->payment_status,
+            'type' => 'subscription_payment_confirmed',
             'message' => 'Your subscription payment has been confirmed.',
         ]);
     }

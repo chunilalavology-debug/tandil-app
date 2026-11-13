@@ -4,16 +4,19 @@ namespace App\Notifications;
 
 use App\Models\Order;
 use App\Models\VendorOrderMapping;
+use App\Notifications\Concerns\SendsFcmPush;
 use App\Support\NotificationAudiencePayload;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 /**
  * In-app delivery OTP for product orders (no external SMS). Single-use, no time expiry.
+ * Also pushed via FCM so the client sees it when the app is closed.
  */
 class DeliveryOtpNotification extends Notification
 {
     use Queueable;
+    use SendsFcmPush;
 
     public function __construct(
         public Order $order,
@@ -24,7 +27,7 @@ class DeliveryOtpNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return $this->channelsWithPush(['database']);
     }
 
     public function toArray(object $notifiable): array

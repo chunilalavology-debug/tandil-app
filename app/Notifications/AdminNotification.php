@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\User;
+use App\Notifications\Concerns\SendsFcmPush;
 use App\Support\NotificationAudiencePayload;
 use App\Support\UserNotificationAudience;
 use Illuminate\Bus\Queueable;
@@ -13,6 +14,7 @@ use Illuminate\Notifications\Messages\DatabaseMessage;
 class AdminNotification extends Notification
 {
     use Queueable;
+    use SendsFcmPush;
 
     protected $title;
     protected $message;
@@ -27,8 +29,8 @@ class AdminNotification extends Notification
 
     public function via($notifiable)
     {
-        // SMTP-free mode: keep notifications in database only.
-        return ['database'];
+        // Database inbox + FCM so alerts arrive when the mobile app is backgrounded or closed.
+        return $this->channelsWithPush(['database']);
     }
 
     public function toMail($notifiable)
