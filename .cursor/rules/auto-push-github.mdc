@@ -25,12 +25,17 @@ After finishing **implementation work** (features, fixes, UI changes, refactors 
 1. `git status` — confirm there are changes
 2. Stage only relevant files (never secrets)
 3. Write a concise commit message (why, not just what)
-4. `git push -u origin HEAD` (or current branch)
-5. Briefly tell the user the commit hash and that it was pushed — no need to ask permission first
+4. Push to **tandil-app** (canonical client remote), **not** `origin`:
+   ```bash
+   git push -u tandil-app HEAD:main
+   ```
+   Use current branch (typically `full-code`). Only use `origin` if the user explicitly asks for TARTEB6655/tandil-backend.
+5. Briefly tell the user the commit hash and that it was pushed to `chunilalavology-debug/tandil-app` — no need to ask permission first
 
 ## Git safety (always)
 
 - Never `git push --force` to `main`/`master`
 - Never skip hooks unless the user asks
 - Never amend unless the user rule for amend applies
-- Remote: `https://github.com/TARTEB6655/tandil-backend.git` on `main` unless the branch context differs
+- **Primary remote:** `tandil-app` → `https://github.com/chunilalavology-debug/tandil-app.git` (`main` via `full-code:main` or `HEAD:main`)
+- **Secondary (backup only):** `origin` → `https://github.com/TARTEB6655/tandil-backend.git` — push here only when the user requests it
