@@ -143,14 +143,16 @@ return [
     ],
 
     /*
-    | Expo Push — React Native / Expo apps (ExponentPushToken[...]).
-    | Server sends to https://exp.host/--/api/v2/push/send (no Firebase key needed for Expo tokens).
+    | Expo Push — React Native / Expo apps (ExponentPushToken[...]) on iOS and Android.
+    | Server sends to https://exp.host/--/api/v2/push/send (no Firebase server key on Laravel when using Expo).
+    | FCM credentials for Android live in the Expo project (FCM V1); Expo forwards to devices.
     */
     'expo' => [
         'enabled' => filter_var(env('EXPO_PUSH_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
         'driver' => env('EXPO_PUSH_DRIVER', 'auto'), // auto|http|log
         'url' => env('EXPO_PUSH_URL', 'https://exp.host/--/api/v2/push/send'),
         'access_token' => env('EXPO_ACCESS_TOKEN'),
+        'android_channel_id' => env('EXPO_ANDROID_CHANNEL_ID', env('FCM_ANDROID_CHANNEL_ID', 'tandil_default')),
     ],
 
 ];

@@ -57,9 +57,24 @@ When a **client** completes checkout and the order becomes **paid**, every **adm
 
 After the app receives the **64-char hex** APNs device token, register it with `"platform": "ios"`. The server uses **APNs** (`.p8` in `.env`). Do not send `ExponentPushToken[...]` if you rely on native APNs.
 
-### Android (later)
+### Android — Expo (recommended)
 
-When Firebase is ready, send `messaging().getToken()` with `"platform": "android"`. Create a notification channel with id `tandil_default`.
+Use the same API as iOS. Register `Notifications.getExpoPushTokenAsync()` (or equivalent) with **`"platform": "android"`**:
+
+```json
+{
+  "token": "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]",
+  "platform": "android"
+}
+```
+
+The backend sends via **Expo Push API** (`https://exp.host/--/api/v2/push/send`). **No** `FCM_PROJECT_ID` / `FCM_PRIVATE_KEY` on Laravel when all Android devices use Expo tokens; configure **FCM V1** in the [Expo dashboard](https://expo.dev) for the app.
+
+The app must define a notification channel whose id matches server default **`tandil_default`** (or set `EXPO_ANDROID_CHANNEL_ID` in `.env`).
+
+### Android — native FCM (optional, non-Expo builds)
+
+Only when the app sends a raw FCM registration token (not `ExponentPushToken[...]`). Then set `FCM_*` service-account env vars on the server.
 
 ## Event coverage by role
 
@@ -86,7 +101,16 @@ APNS_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 APNS_USE_SANDBOX=false
 ```
 
-Android (add later):
+Expo (iOS + Android when using `ExponentPushToken[...]`):
+
+```env
+EXPO_PUSH_ENABLED=true
+EXPO_PUSH_DRIVER=auto
+# EXPO_ACCESS_TOKEN=
+# EXPO_ANDROID_CHANNEL_ID=tandil_default
+```
+
+Android native FCM (only if not using Expo tokens):
 
 ```env
 FCM_ENABLED=true

@@ -12,7 +12,7 @@ class DevicePushTokenController extends Controller
 {
     /**
      * Register or refresh a device push token for the authenticated user (any role).
-     * Required: token. Recommended: platform (ios|android|web). Optional: device_id, app_version, locale.
+     * Required: token. Recommended: platform (ios|android|web). Expo apps send ExponentPushToken[...] with android or ios — delivered via exp.host (no server FCM keys). Optional: device_id, app_version, locale.
      */
     public function store(Request $request)
     {

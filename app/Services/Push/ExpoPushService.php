@@ -55,9 +55,10 @@ class ExpoPushService
             return ['sent' => $tokenList->count(), 'failed' => 0, 'skipped' => false, 'driver' => 'log'];
         }
 
+        $channelId = trim((string) config('services.expo.android_channel_id', ''));
         $messages = [];
         foreach ($tokenList as $token) {
-            $messages[] = [
+            $message = [
                 'to' => $token,
                 'title' => $title,
                 'body' => $body,
@@ -65,6 +66,10 @@ class ExpoPushService
                 'priority' => 'high',
                 'data' => $payloadData,
             ];
+            if ($channelId !== '') {
+                $message['channelId'] = $channelId;
+            }
+            $messages[] = $message;
         }
 
         $sent = 0;

@@ -1,10 +1,10 @@
 {
     "info": {
-        "name": "Tandil Backend v6.3.3",
-        "description": "Tandil Backend API. Env: base_url, token, vendor_id, product_id.\n\nHierarchy: main folders (Client Dashboard, Admin Dashboard, …) → subfolders → APIs.\n\n**v6.3.3:** `POST /api/auth/device-token` — only `token` is required; `platform` recommended. Postman examples omit optional `device_id`, `app_version`, `locale`.\n\n**v6.3.2:** Expo push — `ExponentPushToken[...]` on `device_push_tokens` is sent via `https://exp.host/--/api/v2/push/send` (not direct APNs). When a client order becomes **paid**, all **admin** users get DB notification `type: new_paid_order` + push to their tokens. Native iOS hex tokens still use APNs. Env: `EXPO_PUSH_ENABLED`, optional `EXPO_ACCESS_TOKEN`.\n\n**v6.3.1:** Device push tokens — POST/DELETE `/api/auth/device-token` and `/api/user/device-token`. Push tap data: `type`, `order_id`, `visit_id`, `subscription_id` (no `notification_id`).\n\n**v6.3.0:** Vendor/admin **service-pricing multiselect** — `enable_fixed_price`, `enable_per_m2`, `fixed_price`, `per_m2_price` (+ GET `area_pricing_settings`, `price_per_m2`). Legacy single-mode: `pricing_type` + `price`. Shop product detail: `pricing_type` multi + `price_per_m2` / breakdown. Cart: `area_pricing_mode` (`fixed`|`per_m2`) when both enabled.\n\n**v6.2.1:** Admin vendor pricing split `/pricing/service` + `/pricing/tree-palm`.\n\nAfter adding APIs: append in the correct subfolder, then optionally run:\n  php scripts/force_sort_postman_collection.php\n  php scripts/smoke_postman_number_order.php\n\nLAST_SORTED_AT: 2026-10-27T00:00:00Z\nCOLLECTION_ID: 298aa033-ad49-476b-96e3-9deff814dc55",
+        "name": "Tandil Backend v6.3.4",
+        "description": "Tandil Backend API. Env: base_url, token, vendor_id, product_id.\n\nHierarchy: main folders (Client Dashboard, Admin Dashboard, …) → subfolders → APIs.\n\n**v6.3.4:** Expo Android — register `ExponentPushToken[...]` with `platform: android`; Laravel sends via exp.host (no server FCM keys). Optional `EXPO_ANDROID_CHANNEL_ID=tandil_default`.\n\n**v6.3.3:** `POST /api/auth/device-token` — only `token` is required; `platform` recommended. Postman examples omit optional `device_id`, `app_version`, `locale`.\n\n**v6.3.2:** Expo push — `ExponentPushToken[...]` on `device_push_tokens` is sent via `https://exp.host/--/api/v2/push/send` (not direct APNs). When a client order becomes **paid**, all **admin** users get DB notification `type: new_paid_order` + push to their tokens. Native iOS hex tokens still use APNs. Env: `EXPO_PUSH_ENABLED`, optional `EXPO_ACCESS_TOKEN`.\n\n**v6.3.1:** Device push tokens — POST/DELETE `/api/auth/device-token` and `/api/user/device-token`. Push tap data: `type`, `order_id`, `visit_id`, `subscription_id` (no `notification_id`).\n\n**v6.3.0:** Vendor/admin **service-pricing multiselect** — `enable_fixed_price`, `enable_per_m2`, `fixed_price`, `per_m2_price` (+ GET `area_pricing_settings`, `price_per_m2`). Legacy single-mode: `pricing_type` + `price`. Shop product detail: `pricing_type` multi + `price_per_m2` / breakdown. Cart: `area_pricing_mode` (`fixed`|`per_m2`) when both enabled.\n\n**v6.2.1:** Admin vendor pricing split `/pricing/service` + `/pricing/tree-palm`.\n\nAfter adding APIs: append in the correct subfolder, then optionally run:\n  php scripts/force_sort_postman_collection.php\n  php scripts/smoke_postman_number_order.php\n\nLAST_SORTED_AT: 2026-10-27T00:00:00Z\nCOLLECTION_ID: 298aa033-ad49-476b-96e3-9deff814dc55",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "_exporter_id": "tandil-safe-298aa033",
-        "version": "6.3.3",
+        "version": "6.3.4",
         "_postman_id": "298aa033-ad49-476b-96e3-9deff814dc55"
     },
     "item": [
@@ -953,7 +953,7 @@
                                 ],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"token\": \"ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]\",\n  \"platform\": \"ios\"\n}"
+                                    "raw": "{\n  \"token\": \"ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]\",\n  \"platform\": \"android\"\n}"
                                 },
                                 "url": {
                                     "raw": "{{base_url}}/api/auth/device-token",
@@ -966,7 +966,7 @@
                                         "device-token"
                                     ]
                                 },
-                                "description": "POST /api/auth/device-token. Auth: Bearer {{token}}. Any role (admin: register here on iPhone before QA). Body: **required** `token`; **recommended** `platform` (ios|android|web). Optional only: `device_id`, `app_version`, `locale` — mobile apps may omit them.\n\n**Expo iOS:** send `ExponentPushToken[...]` with platform=ios — backend delivers via Expo Push API.\n**Native APNs:** 64-char hex token with platform=ios.\n\n**Admin push QA:** client completes shop checkout → payment **paid** → each admin with a row in `device_push_tokens` gets inbox notification `type: new_paid_order` + device push.\n\nAlias: POST /api/user/device-token. Push tap data: type, order_id, visit_id, subscription_id, payment_status, order_status."
+                                "description": "POST /api/auth/device-token. Auth: Bearer {{token}}. Any role (admin: register here on iPhone before QA). Body: **required** `token`; **recommended** `platform` (ios|android|web). Optional only: `device_id`, `app_version`, `locale` — mobile apps may omit them.\n\n**Expo Android/iOS:** send `ExponentPushToken[...]` with platform=android or ios — backend delivers via Expo Push API (FCM V1 is configured in Expo, not on Laravel).\n**Native:** 64-char hex APNs token (ios) or raw FCM token (android) only for non-Expo builds.\n\n**Admin push QA:** client completes shop checkout → payment **paid** → each admin with a row in `device_push_tokens` gets inbox notification `type: new_paid_order` + device push.\n\nAlias: POST /api/user/device-token. Push tap data: type, order_id, visit_id, subscription_id, payment_status, order_status."
                             }
                         },
                         {
@@ -1992,7 +1992,7 @@
                                 ],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"token\": \"ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]\",\n  \"platform\": \"ios\"\n}"
+                                    "raw": "{\n  \"token\": \"ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]\",\n  \"platform\": \"android\"\n}"
                                 },
                                 "url": {
                                     "raw": "{{base_url}}/api/user/device-token",
@@ -2005,7 +2005,7 @@
                                         "device-token"
                                     ]
                                 },
-                                "description": "POST /api/user/device-token. Same handler as POST /api/auth/device-token. Body: **required** `token`; **recommended** `platform`. Optional: `device_id`, `app_version`, `locale`. Expo: ExponentPushToken[...] + platform ios. Admin receives pushes on paid client orders (new_paid_order)."
+                                "description": "POST /api/user/device-token. Same handler as POST /api/auth/device-token. Body: **required** `token`; **recommended** `platform`. Optional: `device_id`, `app_version`, `locale`. Expo: ExponentPushToken[...] + platform android|ios. Admin receives pushes on paid client orders (new_paid_order)."
                             }
                         },
                         {
