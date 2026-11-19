@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\DevicePushToken;
 use App\Helpers\ApiResponse;
+use App\Models\DevicePushToken;
+use App\Support\DevicePushTokenPersistence;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -26,24 +27,12 @@ class DevicePushTokenController extends Controller
             'locale' => ['nullable', 'string', 'max:16'],
         ]);
 
-        $user = $request->user();
-        $token = trim($validated['token']);
-        $platform = $validated['platform'] ?? 'unknown';
-
-        // A physical device token belongs to one account at a time.
-        DevicePushToken::query()->where('token', $token)->where('user_id', '!=', $user->id)->delete();
-
-        $record = DevicePushToken::query()->updateOrCreate(
-            ['token' => $token],
-            [
-                'user_id' => $user->id,
-                'platform' => $platform,
-                'device_id' => $validated['device_id'] ?? null,
-                'app_version' => $validated['app_version'] ?? null,
-                'locale' => $validated['locale'] ?? null,
-                'last_used_at' => now(),
-            ]
-        );
+        $record = DevicePushTokenPersistence::upsertForUser($request->user(), $validated);
+        if ($record === null) {
+            return ApiResponse::error('Valid device push token is required (min 20 characters).', 422, [
+                'token' => ['Valid device push token is required.'],
+            ]);
+        }
 
         return ApiResponse::success('Device push token registered.', [
             'id' => $record->id,

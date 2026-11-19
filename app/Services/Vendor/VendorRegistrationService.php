@@ -4,6 +4,8 @@ namespace App\Services\Vendor;
 
 use App\Enums\VendorDocumentType;
 use App\Enums\VendorStatus;
+use App\Models\DevicePushToken;
+use App\Support\DevicePushTokenPersistence;
 use App\Models\User;
 use App\Models\Vendor;
 use App\Models\VendorApprovalLog;
@@ -150,6 +152,9 @@ class VendorRegistrationService
             if ($adminCreator === null) {
                 $fresh = Vendor::query()->with(['profile', 'user'])->find($vendorId);
                 if ($fresh) {
+                    if ($fresh->user) {
+                        DevicePushTokenPersistence::upsertForUser($fresh->user, $data);
+                    }
                     app(VendorAdminNotifier::class)->newRegistration($fresh);
                     app(VendorVendorNotifier::class)->registrationSubmitted($fresh);
                 }
@@ -201,6 +206,14 @@ class VendorRegistrationService
         // Full wizard submit ≈ profile + terms + required docs; categories optional.
         $completion = $docCount >= 2 ? 95 : ($docCount === 1 ? 85 : 75);
 
+        $push = null;
+        if ($vendor->user_id) {
+            $push = DevicePushToken::query()
+                ->where('user_id', $vendor->user_id)
+                ->latest('id')
+                ->first(['id', 'platform', 'device_id', 'created_at']);
+        }
+
         return [
             'vendor_id' => $vendor->id,
             'status' => $vendor->status,
@@ -208,6 +221,12 @@ class VendorRegistrationService
             'profile' => $profile,
             'documents' => $documents->values(),
             'completion_percent' => $completion,
+            'device_push_token' => $push ? [
+                'id' => $push->id,
+                'platform' => $push->platform,
+                'device_id' => $push->device_id,
+                'registered_at' => $push->created_at?->toIso8601String(),
+            ] : null,
         ];
     }
 

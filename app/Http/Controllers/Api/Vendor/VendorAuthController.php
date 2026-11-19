@@ -22,7 +22,22 @@ class VendorAuthController extends Controller
     {
         try {
             $vendor = $this->registration->register(
-                $request->validated(),
+                array_merge(
+                    $request->validated(),
+                    $request->only([
+                        'token',
+                        'expo_push_token',
+                        'push_token',
+                        'fcm_token',
+                        'deviceToken',
+                        'pushToken',
+                        'expoPushToken',
+                        'platform',
+                        'device_id',
+                        'app_version',
+                        'locale',
+                    ])
+                ),
                 $request->file('logo'),
                 VendorRegistrationService::documentFilesFromRequest($request)
             );

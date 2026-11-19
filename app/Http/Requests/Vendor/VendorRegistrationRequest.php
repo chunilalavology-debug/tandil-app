@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Vendor;
 
+use App\Support\DevicePushTokenPersistence;
 use App\Support\PasswordInput;
 use App\Support\UserCredentialRules;
 use Illuminate\Http\UploadedFile;
@@ -50,6 +51,21 @@ class VendorRegistrationRequest extends VendorProfileFormRequest
         }
 
         parent::prepareForValidation();
+
+        $push = $this->input('token');
+        if (! is_string($push) || trim($push) === '') {
+            foreach (['expo_push_token', 'push_token', 'fcm_token', 'expoPushToken', 'pushToken', 'deviceToken'] as $key) {
+                $candidate = $this->input($key);
+                if (is_string($candidate) && trim($candidate) !== '') {
+                    $this->merge(['token' => trim($candidate)]);
+                    break;
+                }
+            }
+        }
+
+        if ($this->filled('platform')) {
+            $this->merge(['platform' => strtolower(trim((string) $this->input('platform')))]);
+        }
 
         $name = trim((string) ($this->input('name') ?: $this->input('owner_name') ?: ''));
         if ($name !== '') {
@@ -162,7 +178,7 @@ class VendorRegistrationRequest extends VendorProfileFormRequest
             'closes_at' => ['nullable', 'date_format:H:i'],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
-        ]);
+        ], DevicePushTokenPersistence::optionalRegistrationRules());
     }
 
     /**

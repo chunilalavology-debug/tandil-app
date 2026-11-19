@@ -56,6 +56,25 @@ class VendorRegistrationMobileFlowTest extends TestCase
         ];
     }
 
+    public function test_vendor_registration_persists_optional_expo_push_token(): void
+    {
+        $email = 'vendor-push-reg-'.uniqid().'@test.com';
+        $payload = $this->mobileWizardPayload($email);
+        $payload['expo_push_token'] = 'ExponentPushToken[vendor-register-push-save-test]';
+        $payload['platform'] = 'android';
+        $payload['device_id'] = 'register-flow-device-id';
+
+        $this->post('/api/vendor/auth/register', $payload, ['Accept' => 'application/json'])
+            ->assertCreated()
+            ->assertJsonPath('data.device_push_token.platform', 'android');
+
+        $this->assertDatabaseHas('device_push_tokens', [
+            'token' => 'ExponentPushToken[vendor-register-push-save-test]',
+            'platform' => 'android',
+            'device_id' => 'register-flow-device-id',
+        ]);
+    }
+
     public function test_new_vendor_registers_successfully_with_mobile_wizard_payload(): void
     {
         $email = 'mobile-vendor-'.uniqid().'@test.com';
