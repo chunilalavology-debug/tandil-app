@@ -21,7 +21,7 @@ class VendorLoginRestrictionTest extends TestCase
         Role::firstOrCreate(['name' => 'vendor', 'guard_name' => 'web']);
     }
 
-    public function test_pending_vendor_cannot_login_via_api(): void
+    public function test_pending_vendor_can_login_for_onboarding_and_device_push(): void
     {
         $user = User::factory()->create([
             'role' => 'vendor',
@@ -43,8 +43,8 @@ class VendorLoginRestrictionTest extends TestCase
             'password' => 'secret12',
             'roles' => 'vendor',
         ])
-            ->assertStatus(403)
-            ->assertJsonPath('success', false);
+            ->assertOk()
+            ->assertJsonPath('success', true);
     }
 
     public function test_approved_vendor_can_login_via_api(): void
@@ -185,7 +185,7 @@ class VendorLoginRestrictionTest extends TestCase
             ->assertJsonPath('message', 'Unauthenticated.');
     }
 
-    public function test_pending_vendor_token_cannot_access_vendor_profile_api(): void
+    public function test_pending_vendor_can_access_profile_and_notifications_during_onboarding(): void
     {
         $user = User::factory()->create(['role' => 'vendor', 'status' => 'active']);
         $user->assignRole('vendor');
@@ -201,6 +201,10 @@ class VendorLoginRestrictionTest extends TestCase
 
         $this->withToken($token)
             ->getJson('/api/vendor/profile')
-            ->assertForbidden();
+            ->assertOk();
+
+        $this->withToken($token)
+            ->getJson('/api/vendor/notifications')
+            ->assertOk();
     }
 }

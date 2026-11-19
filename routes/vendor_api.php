@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\DevicePushTokenController;
 use App\Http\Controllers\Api\Vendor\VendorAuthController;
 use App\Http\Controllers\Api\Vendor\VendorComparisonController;
 use App\Http\Controllers\Api\Vendor\VendorDashboardController;
@@ -37,6 +38,17 @@ Route::prefix('contractor')->group(function () {
     Route::get('/auth/registration-options', [\App\Http\Controllers\Api\Supervisor\SupervisorRegistrationController::class, 'registrationOptions']);
     Route::post('/auth/register', [\App\Http\Controllers\Api\Supervisor\SupervisorRegistrationController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']); // body: email, password, roles: "supervisor"
+});
+
+/*
+|--------------------------------------------------------------------------
+| Vendor device push (pending/approved — no vendor.account gate)
+|--------------------------------------------------------------------------
+| Mobile apps often call POST /api/vendor/auth/device-token after vendor login.
+*/
+Route::middleware(['auth:sanctum', 'role:vendor'])->prefix('vendor')->group(function () {
+    Route::post('/auth/device-token', [DevicePushTokenController::class, 'store']);
+    Route::delete('/auth/device-token', [DevicePushTokenController::class, 'destroy']);
 });
 
 /*

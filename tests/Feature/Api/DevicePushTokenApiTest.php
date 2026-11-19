@@ -11,6 +11,28 @@ class DevicePushTokenApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_register_accepts_expo_push_token_alias_field(): void
+    {
+        $user = User::factory()->create(['role' => 'vendor']);
+        $user->assignRole('vendor');
+        $bearer = $user->createToken('test')->plainTextToken;
+
+        $this->postJson('/api/auth/device-token', [
+            'expo_push_token' => 'ExponentPushToken[alias-field-smoke-test-xx]',
+            'platform' => 'android',
+        ], [
+            'Authorization' => 'Bearer '.$bearer,
+            'Accept' => 'application/json',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.platform', 'android');
+
+        $this->assertDatabaseHas('device_push_tokens', [
+            'user_id' => $user->id,
+            'token' => 'ExponentPushToken[alias-field-smoke-test-xx]',
+        ]);
+    }
+
     public function test_register_expo_android_device_token(): void
     {
         $user = User::factory()->create(['role' => 'client']);

@@ -16,6 +16,8 @@ class DevicePushTokenController extends Controller
      */
     public function store(Request $request)
     {
+        $this->normalizeDeviceTokenPayload($request);
+
         $validated = $request->validate([
             'token' => ['required', 'string', 'min:20', 'max:512'],
             'platform' => ['nullable', 'string', Rule::in(['android', 'ios', 'web', 'unknown'])],
@@ -55,6 +57,8 @@ class DevicePushTokenController extends Controller
      */
     public function destroy(Request $request)
     {
+        $this->normalizeDeviceTokenPayload($request);
+
         $validated = $request->validate([
             'token' => ['required', 'string', 'max:512'],
         ]);
@@ -68,5 +72,31 @@ class DevicePushTokenController extends Controller
             $deleted ? 'Device push token removed.' : 'Token not found for this account.',
             ['deleted' => (bool) $deleted]
         );
+    }
+
+    /**
+     * Mobile clients sometimes send push_token / expo_push_token / camelCase keys.
+     */
+    private function normalizeDeviceTokenPayload(Request $request): void
+    {
+        $token = $request->input('token');
+        if (! is_string($token) || trim($token) === '') {
+            foreach (['push_token', 'expo_push_token', 'fcm_token', 'deviceToken', 'pushToken', 'expoPushToken'] as $key) {
+                $candidate = $request->input($key);
+                if (is_string($candidate) && trim($candidate) !== '') {
+                    $token = $candidate;
+                    break;
+                }
+            }
+        }
+
+        if (is_string($token) && trim($token) !== '') {
+            $request->merge(['token' => trim($token)]);
+        }
+
+        $platform = $request->input('platform');
+        if (is_string($platform) && $platform !== '') {
+            $request->merge(['platform' => strtolower(trim($platform))]);
+        }
     }
 }

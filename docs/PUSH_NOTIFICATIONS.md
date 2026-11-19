@@ -19,7 +19,9 @@ Content-Type: application/json
 
 Optional (analytics only — not required for push delivery): `device_id`, `app_version`, `locale`.
 
-Alias: `POST /api/user/device-token` (same body).
+**Vendor app (same body):** `POST /api/vendor/auth/device-token` after `POST /api/vendor/auth/login` — also accepts `expo_push_token`, `push_token`, `fcm_token`, or `deviceToken` instead of `token`.
+
+Aliases: `POST /api/user/device-token`, `DELETE` on the same paths with body `{ "token": "..." }`.
 
 On logout:
 
